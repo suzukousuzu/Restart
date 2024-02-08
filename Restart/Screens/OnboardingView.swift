@@ -10,6 +10,13 @@ import SwiftUI
 struct OnboardingView: View {
     
     @AppStorage("onboarding") var isOnboardingViewActive : Bool = true
+    
+    @State private var buttonWidth: Double =  UIScreen.main.bounds.width - 80
+    
+    @State private var isAnimating: Bool = false
+
+    
+    @State private var buttonOfset: CGFloat = 0
     var body: some View {
         ZStack {
             Color("ColorBlue")
@@ -33,23 +40,19 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 10)
                     
-                    
                 }
+                .opacity(isAnimating ? 1: 0)
+                .offset(y: isAnimating ? 0 : -40)
+                .animation(.easeOut(duration:1), value: isAnimating)
                 
                 ZStack {
-                    ZStack {
-                        Circle()
-                            .stroke(.white.opacity(0.2), lineWidth: 40)
-                            .frame(width:260, height: 260, alignment: .center)
-                        
-                        Circle()
-                            .stroke(.white.opacity(0.2), lineWidth: 80)
-                            .frame(width:260, height: 260, alignment: .center)
-                        
-                    }
+                    CircleGroupView(ShapeColor: .white, ShapeOpacity: 0.2)
+                    
                     Image("character-1")
                         .resizable()
                         .scaledToFit()
+                        .opacity(isAnimating ? 1 : 0)
+                        .animation(.easeOut(duration: 1), value: isAnimating)
                 }
                 Spacer()
                 
@@ -69,7 +72,7 @@ struct OnboardingView: View {
                     HStack {
                         Capsule()
                             .fill(Color("ColorRed"))
-                            .frame(width: 80)
+                            .frame(width: buttonOfset + 80)
                         
                         Spacer()
                         
@@ -88,20 +91,45 @@ struct OnboardingView: View {
                             
                         }
                         .foregroundColor(.white)
-                    .frame(width:80, height:80, alignment: .center)
-                    .onTapGesture {
-                        isOnboardingViewActive = false
-                    }
+                        .frame(width:80, height:80, alignment: .center)
+                        .offset(x: buttonOfset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged{ gesture in
+                                    if gesture.translation.width > 0 && buttonOfset <= buttonWidth - 80 {
+                                        buttonOfset = gesture.translation.width
+                                    }
+                                }
+                                .onEnded{ _  in
+                                
+                                    withAnimation(Animation.easeOut(duration: 0.4)) {
+                                        if buttonOfset > buttonWidth / 2 {
+                                            buttonOfset = buttonWidth - 80
+                                            isOnboardingViewActive = false
+                                        } else {
+                                            buttonOfset = 0
+                                        }
+                                    }
+                                }
+                        )
+                        
                         
                         Spacer()
                         
                     } // HSTACK
                 }
-                .frame(height: 80, alignment: .center)
+                .frame(width: buttonWidth,height: 80, alignment: .center)
                 .padding()
+                .opacity(isAnimating ? 1: 0)
+                .offset(y: isAnimating ? 0 : 40)
+                .animation(.easeOut(duration: 1), value: isAnimating)
+                
                 
             } // VStack
-        } // ZSTACK
+        }// ZSTACK
+        .onAppear(perform: {
+            isAnimating = true
+        })
     }
 }
 
