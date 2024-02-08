@@ -40,7 +40,10 @@ struct HomeView: View {
                 
                 Button {
                     withAnimation {
+                        playSound(sound: "success", type: "mp4")
                         isOnboardingViewActive = true
+                        
+                        
                     }
                 } label: {
                     Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
